@@ -7,6 +7,7 @@ import { useToast } from '../../hooks/useToast'
 import { sb, signIn, signOut } from '../../services/supabase'
 import { CHALLENGE_CONFIGS, CURRENCIES } from '../../utils/challengeConfigs'
 import { dbCreateChallenge, dbWriteEvent, dbUpsertProfile, dbLoadActiveChallenges } from '../../services/db'
+import UpgradeModal from '../modals/UpgradeModal'
 
 // ─── Validators ───────────────────────────────────────────────────────────────
 
@@ -145,6 +146,7 @@ export default function AuthScreen() {
   const [customMult,    setCustomMult]    = useState('')
   const [customMultErr, setCustomMultErr] = useState('')
   const [currency,      setCurrency]      = useState('GBP')
+  const [showUpgrade,   setShowUpgrade]   = useState(false)
   const [settingUp,     setSettingUp]     = useState(false)
 
   const emailRef    = useRef(null)
@@ -671,11 +673,11 @@ export default function AuthScreen() {
                   className={`challenge-type-option${!isPremium ? ' locked' : ''}`}
                   onClick={() => {
                     if (!isPremium) {
-                      showToast('Custom challenges are a Pro feature. Upgrade to Day One.')
-                      return
+                      setShowUpgrade(true)
+                    } else {
+                      dispatch({ type: 'SET_CREATOR_RETURN_TO', payload: 'setup' })
+                      navigate('/app/custom-creator')
                     }
-                    dispatch({ type: 'SET_CREATOR_RETURN_TO', payload: 'setup' })
-                    navigate('/app/custom-creator')
                   }}
                 >
                   <div className="cto-icon">✨</div>
@@ -738,6 +740,7 @@ export default function AuthScreen() {
         )}
 
       </div>
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} onUpgraded={() => { setShowUpgrade(false); dispatch({ type: 'SET_CREATOR_RETURN_TO', payload: 'setup' }); navigate('/app/custom-creator') }} />}
     </div>
   )
 }

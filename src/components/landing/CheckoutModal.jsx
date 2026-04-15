@@ -6,6 +6,7 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js'
+import { sb } from '../../services/supabase'
 
 // Load Stripe once — outside component to avoid re-instantiation
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
@@ -101,7 +102,19 @@ function PaymentForm({ email, onSuccess, onClose }) {
       )
       setPaying(false)
     } else {
-      // Payment succeeded — no redirect needed (card completed inline)
+      // Record the payment. Database automatically figures out the math and matches
+      // the profile when the user finishes creating their account later!
+      try {
+        await sb.from('payments').insert({
+          email: email.toLowerCase(),
+          amount_paid: 12.99,
+          currency: 'GBP',
+          plan_name: 'Day One Pass'
+        })
+      } catch (logErr) {
+        console.error('Failed to log payment:', logErr)
+      }
+
       onSuccess()
     }
   }

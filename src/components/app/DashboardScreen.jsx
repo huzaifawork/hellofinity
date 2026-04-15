@@ -10,6 +10,7 @@ import HelpModal from '../modals/HelpModal'
 import SuggestModal from '../modals/SuggestModal'
 import DeleteAccountModal from '../modals/DeleteAccountModal'
 import ChangeCurrencyModal from '../modals/ChangeCurrencyModal'
+import UpgradeModal from '../modals/UpgradeModal'
 
 const MARK = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIwIiBmaWxsPSIjMjIxMDBDIi8+PGxpbmUgeDE9IjI1IiB5MT0iMjAiIHgyPSIyNSIgeTI9IjgwIiBzdHJva2U9IiNGNUYyRUQiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSI1MCIgeTE9IjIwIiB4Mj0iNTAiIHkyPSI4MCIgc3Ryb2tlPSIjRjVGMkVEIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iNTAiIHkxPSIyMCIgeDI9Ijc1IiB5Mj0iMjAiIHN0cm9rZT0iI0Y1RjJFRCIgc3Ryb2tlLXdpZHRoPSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTE4IDU1IFE0NSA3OCA4NSA1MCIgc3Ryb2tlPSIjRjVDODQyIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==`
 
@@ -24,6 +25,7 @@ export default function DashboardScreen({ visible }) {
   const [showSuggest, setShowSuggest] = useState(false)
   const [showDeleteAccount, setShowDeleteAccount] = useState(false)
   const [showChangeCurrency, setShowChangeCurrency] = useState(false)
+  const [showUpgrade, setShowUpgrade] = useState(false)
 
   useEffect(() => {
     if (!visible || !currentUser) return
@@ -219,8 +221,12 @@ export default function DashboardScreen({ visible }) {
           className="btn-secondary"
           style={{ marginTop: 12, width: '100%' }}
           onClick={() => {
-            dispatch({ type: 'SET_CREATOR_RETURN_TO', payload: 'dashboard' })
-            navigate('/app/custom-creator')
+            if (!isPremium) {
+              setShowUpgrade(true)
+            } else {
+              dispatch({ type: 'SET_CREATOR_RETURN_TO', payload: 'dashboard' })
+              navigate('/app/custom-creator')
+            }
           }}
         >
           + Custom challenge
@@ -255,6 +261,7 @@ export default function DashboardScreen({ visible }) {
       {showSuggest && <SuggestModal onClose={() => setShowSuggest(false)} currentUser={currentUser} />}
       {showDeleteAccount && <DeleteAccountModal onClose={() => setShowDeleteAccount(false)} />}
       {showChangeCurrency && <ChangeCurrencyModal onClose={() => setShowChangeCurrency(false)} />}
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} onUpgraded={() => { setShowUpgrade(false); dispatch({ type: 'SET_CREATOR_RETURN_TO', payload: 'dashboard' }); navigate('/app/custom-creator') }} />}
     </div>
   )
 }

@@ -1,0 +1,454 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   UPGRADE MODAL — premium upgrade prompt
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Overlay ─────────────────────────────────────────────────────────────────── */
+.upgrade-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: upgradeFadeIn 0.25s ease;
+  padding: 16px;
+}
+
+@keyframes upgradeFadeIn {
+  from { opacity: 0 }
+  to   { opacity: 1 }
+}
+
+/* ── Modal container ─────────────────────────────────────────────────────────── */
+.upgrade-modal {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--card, #fff);
+  border-radius: 20px;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  animation: upgradeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+}
+
+@keyframes upgradeSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.97) }
+  to   { opacity: 1; transform: translateY(0) scale(1) }
+}
+
+.upgrade-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.08);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text2, #666);
+  transition: all 0.2s ease;
+}
+.upgrade-close:hover {
+  background: rgba(0, 0, 0, 0.15);
+  color: var(--text, #333);
+}
+
+/* ── Hero section ────────────────────────────────────────────────────────────── */
+.upgrade-hero {
+  position: relative;
+  text-align: center;
+  padding: 40px 28px 24px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #22100C 0%, #3a1e15 100%);
+  border-radius: 20px 20px 0 0;
+}
+
+.upgrade-hero-glow {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 200, 66, 0.35) 0%, transparent 70%);
+  pointer-events: none;
+  animation: upgradeGlowPulse 3s ease-in-out infinite;
+}
+
+@keyframes upgradeGlowPulse {
+  0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1) }
+  50%      { opacity: 1; transform: translateX(-50%) scale(1.15) }
+}
+
+.upgrade-hero-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  position: relative;
+  animation: upgradeBounce 2s ease-in-out infinite;
+}
+
+@keyframes upgradeBounce {
+  0%, 100% { transform: translateY(0) }
+  50%      { transform: translateY(-6px) }
+}
+
+.upgrade-hero-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #F5F2ED;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+
+.upgrade-hero-sub {
+  font-size: 14px;
+  color: rgba(245, 242, 237, 0.7);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Price card ──────────────────────────────────────────────────────────────── */
+.upgrade-price-card {
+  margin: 20px 24px 0;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--bg2, #FAFAF8);
+  border: 1.5px solid var(--border, rgba(34, 16, 12, 0.08));
+}
+
+.upgrade-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.upgrade-plan-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text, #22100C);
+}
+
+.upgrade-plan-sub {
+  font-size: 12px;
+  color: var(--muted, #8A6A60);
+  margin-top: 2px;
+}
+
+.upgrade-price {
+  text-align: right;
+}
+
+.upgrade-price-amount {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text, #22100C);
+  letter-spacing: -0.02em;
+}
+
+.upgrade-price-period {
+  display: block;
+  font-size: 11px;
+  color: var(--muted, #8A6A60);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.upgrade-price-saving {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border, rgba(34, 16, 12, 0.08));
+  font-size: 12px;
+  color: var(--muted, #8A6A60);
+  line-height: 1.5;
+}
+
+.upgrade-saving-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #22100C;
+  color: #F5C842;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* ── Features ────────────────────────────────────────────────────────────────── */
+.upgrade-features {
+  padding: 20px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upgrade-feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text, #22100C);
+}
+
+.upgrade-feature-icon {
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--bg2, #FAFAF8);
+  flex-shrink: 0;
+}
+
+.upgrade-feature-text {
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* ── CTA button ──────────────────────────────────────────────────────────────── */
+.upgrade-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% - 48px);
+  margin: 24px 24px 0;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #F5C842 0%, #e8b730 100%);
+  color: #22100C;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(245, 200, 66, 0.3);
+  gap: 8px;
+}
+
+.upgrade-cta:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(245, 200, 66, 0.4);
+}
+
+.upgrade-cta:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.upgrade-cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Guarantee ───────────────────────────────────────────────────────────────── */
+.upgrade-guarantee {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 24px 24px;
+  font-size: 11px;
+  color: var(--muted, #8A6A60);
+  font-weight: 500;
+}
+
+/* ── Error ────────────────────────────────────────────────────────────────────── */
+.upgrade-error {
+  margin: 12px 24px 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #FFF0ED;
+  color: #e04c2f;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Payment step ────────────────────────────────────────────────────────────── */
+.upgrade-payment-body {
+  padding: 24px;
+}
+
+.upgrade-payment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.upgrade-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted, #8A6A60);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+.upgrade-back:hover { color: var(--text, #22100C) }
+
+.upgrade-payment-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text, #22100C);
+}
+
+.upgrade-payment-price {
+  font-weight: 800;
+  color: var(--text, #22100C);
+}
+
+.upgrade-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.upgrade-pay-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #F5C842 0%, #e8b730 100%);
+  color: #22100C;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(245, 200, 66, 0.3);
+  margin-top: 4px;
+}
+.upgrade-pay-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(245, 200, 66, 0.4);
+}
+.upgrade-pay-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.upgrade-paying {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.upgrade-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid rgba(34, 16, 12, 0.2);
+  border-top-color: #22100C;
+  border-radius: 50%;
+  animation: upgradeSpin 0.6s linear infinite;
+}
+
+@keyframes upgradeSpin {
+  to { transform: rotate(360deg) }
+}
+
+.upgrade-secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted, #8A6A60);
+  font-weight: 500;
+}
+
+/* ── Success step ────────────────────────────────────────────────────────────── */
+.upgrade-success {
+  text-align: center;
+  padding: 40px 28px 32px;
+}
+
+.upgrade-success-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  animation: upgradeBounce 2s ease-in-out infinite;
+}
+
+.upgrade-success-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text, #22100C);
+  margin: 0 0 8px;
+}
+
+.upgrade-success-sub {
+  font-size: 14px;
+  color: var(--muted, #8A6A60);
+  margin: 0 0 20px;
+  line-height: 1.6;
+}
+
+.upgrade-success-perks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.upgrade-perk {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text, #22100C);
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--bg2, #FAFAF8);
+}
+
+/* ── Dark mode overrides ─────────────────────────────────────────────────────── */
+[data-theme="dark"] .upgrade-modal {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .upgrade-close {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+}
+[data-theme="dark"] .upgrade-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+[data-theme="dark"] .upgrade-hero {
+  background: linear-gradient(135deg, #1a0f0a 0%, #2d1610 100%);
+}
+
+[data-theme="dark"] .upgrade-saving-badge {
+  background: #F5C842;
+  color: #22100C;
+}
+
+[data-theme="dark"] .upgrade-error {
+  background: rgba(224, 76, 47, 0.15);
+}
