@@ -66,6 +66,66 @@ export default defineConfig(({ mode }) => {
               res.end(JSON.stringify({ error: err.message }))
             }
           })
+
+          server.middlewares.use('/api/reset-password', async (req, res) => {
+            res.setHeader('Content-Type', 'application/json')
+
+            if (req.method === 'OPTIONS') {
+              res.setHeader('Access-Control-Allow-Origin', '*')
+              res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+              res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+              res.statusCode = 200
+              return res.end()
+            }
+
+            if (req.method !== 'POST') {
+              res.statusCode = 405
+              return res.end(JSON.stringify({ error: 'Method not allowed' }))
+            }
+
+            let raw = ''
+            for await (const chunk of req) raw += chunk
+
+            try {
+              const { email, newPassword } = JSON.parse(raw || '{}')
+              if (!email || !newPassword) {
+                res.statusCode = 400
+                return res.end(JSON.stringify({ error: 'Email and new password are required' }))
+              }
+
+              const supabaseUrl = env.VITE_SUPABASE_URL
+              const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY
+
+              if (!supabaseUrl || !serviceRoleKey) {
+                res.statusCode = 500
+                return res.end(JSON.stringify({ error: 'Server configuration error: missing SUPABASE_SERVICE_ROLE_KEY or VITE_SUPABASE_URL' }))
+              }
+
+              const { createClient } = await import('@supabase/supabase-js')
+              const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+                auth: { autoRefreshToken: false, persistSession: false }
+              })
+
+              const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers()
+              if (listError) throw listError
+
+              const user = users.find(u => u.email.toLowerCase() === email.toLowerCase())
+              if (!user) {
+                res.statusCode = 200
+                return res.end(JSON.stringify({ message: 'If an account exists, the password has been reset.' }))
+              }
+
+              const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, { password: newPassword })
+              if (updateError) throw updateError
+
+              res.statusCode = 200
+              res.end(JSON.stringify({ message: 'Password updated successfully' }))
+            } catch (err) {
+              console.error('[Reset password middleware]', err.message)
+              res.statusCode = 500
+              res.end(JSON.stringify({ error: err.message }))
+            }
+          })
         },
       },
     ],

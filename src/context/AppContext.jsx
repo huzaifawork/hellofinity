@@ -21,6 +21,7 @@ const initialState = {
     doneLog: [],
     highlightedEnv: null,
     startedAt: null,
+    updatedAt: null,
   },
   // UI
   screen: 'loading',          // loading | auth | app | dashboard

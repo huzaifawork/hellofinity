@@ -291,8 +291,8 @@ export default function LandingPage() {
             </span>
           </div>
           <div className="footer-links">
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
+            <a href="/app/privacy" onClick={e => { e.preventDefault(); navigate('/app/privacy') }}>Privacy</a>
+            <a href="/app/terms" onClick={e => { e.preventDefault(); navigate('/app/terms') }}>Terms</a>
             <a href="mailto:hello@hellofinity.com">Contact</a>
           </div>
           <div>HelloFinity · Your savings challenges, sorted.</div>

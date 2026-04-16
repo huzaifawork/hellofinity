@@ -5,7 +5,7 @@ export default function TermsScreen() {
   function back() { navigate(-1) }
 
   return (
-    <div className="privacy-screen">
+    <div className="legal-screen">
       <div className="privacy-header">
         <button className="back-btn" onClick={back}>← Back</button>
         <div className="privacy-header-title">Terms of Service</div>

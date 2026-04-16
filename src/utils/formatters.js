@@ -31,6 +31,19 @@ export function totalForMult(m, challengeType = 'envelope_100') {
   return config.totalFn(m)
 }
 
+
+const MONTHS_3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+export function formatDate(date, includeYear = true) {
+  if (!date) return '—'
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return '—'
+  const day = d.getDate()
+  const month = MONTHS_3[d.getMonth()]
+  const year = d.getFullYear()
+  return includeYear ? `${day} ${month} ${year}` : `${day} ${month}`
+}
+
 export function getCalendarMonths(startDateStr) {
   if (!startDateStr) {
     const now = new Date()
@@ -48,7 +61,7 @@ export function getCalendarMonths(startDateStr) {
     const remaining = 365 - globalDay
     const count = Math.min(daysInMonth - current.getDate() + 1, remaining)
     months.push({
-      label: current.toLocaleDateString('en-GB', { month: 'long' }),
+      label: MONTHS_3[month],
       year,
       globalStart: globalDay,
       count,

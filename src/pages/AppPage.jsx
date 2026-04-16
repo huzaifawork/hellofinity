@@ -105,7 +105,8 @@ export default function AppLayout() {
           const acd  = Array.isArray(ach.challenge_data) ? ach.challenge_data[0] : (ach.challenge_data || {})
           const acfg = CHALLENGE_CONFIGS[ach.type] || CHALLENGE_CONFIGS.envelope_100
           const done = (acd.progress || []).filter(Boolean).length
-          dispatch({ type: 'SET_CELEBRATION', challengeId: ach.id, payload: done === acfg.slots })
+          const totalSlots = ach.type === 'custom' ? (acd.tile_amounts?.length || 0) : acfg.slots
+          dispatch({ type: 'SET_CELEBRATION', challengeId: ach.id, payload: totalSlots > 0 && done === totalSlots })
           dispatch({ type: 'SET_MILESTONES',  challengeId: ach.id, payload: new Set() })
         })
 
