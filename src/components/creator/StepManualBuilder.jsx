@@ -55,12 +55,12 @@ export default function StepManualBuilder({ state, dispatch, currency, onNext })
         rows={2}
         placeholder="e.g. 10, 25, 50, 100 — or one per line"
         onPaste={handlePaste}
-        style={{ resize: 'vertical', fontFamily: 'monospace', fontSize: 13 }}
+        style={{ resize: 'vertical', fontFamily: 'monospace', fontSize: 13, minHeight: 70 }}
         readOnly
       />
       {pasteHint && <div className="creator-hint-error">{pasteHint}</div>}
 
-      <div className="creator-section-label" style={{ marginTop: 16 }}>
+      <div className="creator-section-label">
         Tiles ({state.manualInputs.length})
       </div>
 
@@ -95,11 +95,11 @@ export default function StepManualBuilder({ state, dispatch, currency, onNext })
         + Add tile
       </button>
 
-      <div className="manual-total-bar">
-        <span className="manual-total-label">
-          {state.manualInputs.length} tiles · live total
+      <div className="manual-total-bar" style={{ padding: '16px 0', borderTop: '1px solid var(--border-md)' }}>
+        <span className="manual-total-label" style={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          {state.manualInputs.length} tiles · total
         </span>
-        <span className="manual-total-value">{fmt(liveTotal, currency)}</span>
+        <span className="manual-total-value" style={{ fontSize: 18 }}>{fmt(liveTotal, currency)}</span>
       </div>
 
       {state.manualInputs.length >= 2 && !canProceed && (
@@ -130,7 +130,7 @@ export default function StepManualBuilder({ state, dispatch, currency, onNext })
           onClick={() => { commitAmounts(); onNext() }}
           disabled={!canProceed}
         >
-          Preview →
+          Preview challenge →
         </button>
       </div>
     </div>

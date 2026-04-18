@@ -58,13 +58,13 @@ export default function StepPreview({ state, dispatch, currency, isCreating, onE
           disabled={isCreating}
         >
           {isCreating
-            ? <><span className="co-spinner" style={{ marginRight: 8 }} /> Creating…</>
-            : 'Create challenge →'
+            ? <><span className="creator-spinner" style={{ marginRight: 8 }} /> Creating…</>
+            : 'Create challenge'
           }
         </button>
         {!isCreating && (
-          <div style={{ textAlign: 'center', marginTop: 10, fontSize: 11, color: 'var(--hint)' }}>
-            Tap "Edit tiles" to make changes before creating.
+          <div style={{ textAlign: 'center', marginTop: 12, fontSize: 11, color: 'var(--hint)' }}>
+            You can always edit or delete this challenge later.
           </div>
         )}
       </div>

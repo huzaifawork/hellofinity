@@ -215,8 +215,27 @@ export default function ChallengeScreen({ visible }) {
 
       {/* Main content */}
       <main className="app-content">
+
+        {/* Randomiser */}
+        <div className="randomiser-section">
+          <div className="rand-inner">
+            <div className="rand-eyebrow">Random pick</div>
+            <div className={`rand-result${randResult !== null ? ' has-result' : ''}`}>
+              {randResult !== null ? `${config.slotLabel === 'envelope' ? '#' : ''}${randResult + 1} — ${fmt(slotVal(randResult), currency)}` : 'Pick for me'}
+            </div>
+            <div className="rand-sub">{randResult !== null ? `Tap envelope #${randResult + 1} above to mark it.` : `Tap the button to pick a random ${config.slotLabel}`}</div>
+          </div>
+          <button className="rand-btn" onClick={pickRandom} aria-label="Random pick">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.8-1.1 2-1.7 3.3-1.7H22"/>
+              <path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.5 2.2"/>
+              <path d="M22 18h-5.9c-1.3 0-2.5-.6-3.3-1.7l-.5-.8"/><path d="m18 14 4 4-4 4"/>
+            </svg>
+          </button>
+        </div>
+
         {/* Filter */}
-        <div className="filter-bar">
+        <div className="filter-bar" style={{ marginBottom: '1.5rem', justifyContent: 'flex-start' }}>
           {['all', 'todo', 'done'].map(f => (
             <button key={f} className={`filter-btn${filter === f ? ' active' : ''}`}
               onClick={() => setFilter(f)}>
@@ -322,23 +341,7 @@ export default function ChallengeScreen({ visible }) {
           )
         })()}
 
-        {/* Randomiser */}
-        <div className="randomiser-section">
-          <div className="rand-inner">
-            <div className="rand-eyebrow">Random pick</div>
-            <div className={`rand-result${randResult !== null ? ' has-result' : ''}`}>
-              {randResult !== null ? `${config.slotLabel === 'envelope' ? '#' : ''}${randResult + 1} — ${fmt(slotVal(randResult), currency)}` : 'Pick for me'}
-            </div>
-            <div className="rand-sub">{randResult !== null ? `Tap envelope #${randResult + 1} above to mark it.` : `Tap the button to pick a random ${config.slotLabel}`}</div>
-          </div>
-          <button className="rand-btn" onClick={pickRandom} aria-label="Random pick">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.8-1.1 2-1.7 3.3-1.7H22"/>
-              <path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.5 2.2"/>
-              <path d="M22 18h-5.9c-1.3 0-2.5-.6-3.3-1.7l-.5-.8"/><path d="m18 14 4 4-4 4"/>
-            </svg>
-          </button>
-        </div>
+
 
         {/* Grid title */}
         <div className="grid-section">

@@ -21,7 +21,7 @@ export function fmtCompact(amount, currency = 'GBP') {
   const cur = CURRENCIES[currency] || CURRENCIES.GBP
   const n = parseFloat(amount) || 0
   if (cur.decimals === 0) return cur.symbol + Math.round(n)
-  if (n < 1) return cur.symbol + '.' + String(Math.round(n * 100)).padStart(2, '0')
+  if (n < 1) return cur.symbol + '0.' + String(Math.round(n * 100)).padStart(2, '0')
   if (Number.isInteger(n)) return cur.symbol + n
   return cur.symbol + n.toFixed(cur.decimals)
 }

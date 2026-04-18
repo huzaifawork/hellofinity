@@ -32,7 +32,7 @@ export default function StepName({ state, dispatch, onNext }) {
           onClick={onNext}
           disabled={!validation.valid}
         >
-          Continue →
+          Continue
         </button>
       </div>
     </div>

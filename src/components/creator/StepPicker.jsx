@@ -3,10 +3,10 @@ import { generateAmounts } from '../../utils/tileCalculations'
 import CheckoutModal from '../landing/CheckoutModal'
 
 const TEMPLATES = [
-  { id: 'holiday',   icon: '✈️', name: 'Holiday Fund',      sub: '12 tiles · £1,200', tiles: 12, target: 1200, spread: 'equal'     },
-  { id: 'christmas', icon: '🎄', name: 'Christmas Savings', sub: '10 tiles · £500',   tiles: 10, target: 500,  spread: 'ascending'  },
-  { id: 'emergency', icon: '🛡️', name: 'Emergency Fund',    sub: '6 tiles · £3,000',  tiles: 6,  target: 3000, spread: 'equal'      },
-  { id: 'payday',    icon: '💰', name: 'Payday Challenge',  sub: '4 tiles · £400',    tiles: 4,  target: 400,  spread: 'equal'      },
+  { id: 'holiday',   icon: '✈️', name: 'Holiday Fund',      sub: '24 tiles · £1,200', tiles: 24, target: 1200, spread: 'ascending' },
+  { id: 'christmas', icon: '🎄', name: 'Christmas Savings', sub: '12 tiles · £500',   tiles: 12, target: 500,  spread: 'equal'     },
+  { id: 'emergency', icon: '🛡️', name: 'Emergency Fund',    sub: '52 tiles · £1,000', tiles: 52, target: 1000, spread: 'ascending' },
+  { id: 'payday',    icon: '💰', name: 'Payday Challenge',  sub: '12 tiles · £300',   tiles: 12, target: 300,  spread: 'random'    },
 ]
 
 export default function StepPicker({ state, dispatch, isPremium, precision, onNext }) {
@@ -83,10 +83,10 @@ export default function StepPicker({ state, dispatch, isPremium, precision, onNe
           <div className="upgrade-prompt-icon">⭐</div>
           <div className="upgrade-prompt-title">Custom challenges are a Pro feature</div>
           <div className="upgrade-prompt-sub">
-            Upgrade to Day One to unlock custom challenges, unlimited tiles, and every future feature — one payment, forever.
+            Upgrade to Day One to unlock custom challenges, unlimited tiles, and every future feature.
           </div>
           <button className="btn-primary btn-full" onClick={() => setShowCheckout(true)}>
-            Get Day One → £12.99
+            Upgrade now → £12.99
           </button>
         </div>
       )}

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { CURRENCIES } from '../../utils/challengeConfigs'
 import { generateAmounts } from '../../utils/tileCalculations'
 import { validateTiles, validateTarget, getAutoHint } from '../../utils/creatorValidation'
 import { fmt } from '../../utils/formatters'
@@ -12,6 +13,7 @@ const SPREADS = [
 
 export default function StepAutoBuilder({ state, dispatch, precision, currency, onNext }) {
   const [generated, setGenerated] = useState(state.amounts.length > 0)
+  const symbol = CURRENCIES[currency]?.symbol || '£'
 
   const tilesV  = validateTiles(state.tilesInput)
   const targetV = validateTarget(state.targetInput)
@@ -29,6 +31,19 @@ export default function StepAutoBuilder({ state, dispatch, precision, currency, 
     dispatch({ type: 'SET_BASE_AMOUNTS', payload: base    })
     setGenerated(true)
   }
+
+  // Auto-generate when inputs change if we've already generated before
+  useEffect(() => {
+    if (canGenerate && (generated || (state.tilesInput && state.targetInput))) {
+      handleGenerate()
+    }
+  }, [state.tiles, state.target, state.spread, precision])
+
+  // Is the current preview out of sync with current inputs?
+  const isStale = generated && canGenerate && (
+    state.amounts.length !== state.tiles || 
+    Math.abs(state.amounts.reduce((s, v) => s + v, 0) - state.target) > 0.01
+  )
 
   const canProceed = generated && state.amounts.length > 0
 
@@ -53,11 +68,11 @@ export default function StepAutoBuilder({ state, dispatch, precision, currency, 
         </div>
       )}
 
-      <label className="form-label" style={{ marginTop: 16 }}>Target total</label>
+      <label className="form-label" style={{ marginTop: 20 }}>Target total ({symbol})</label>
       <input
         className={`form-input${state.targetInput && !targetV.valid ? ' input-error' : ''}`}
         type="number" min="0.01" step="0.01"
-        placeholder="e.g. 1200"
+        placeholder={`e.g. ${symbol}1200`}
         value={state.targetInput}
         onChange={e => dispatch({ type: 'SET_TARGET_INPUT', payload: e.target.value })}
       />
@@ -84,29 +99,31 @@ export default function StepAutoBuilder({ state, dispatch, precision, currency, 
 
       {generated && state.amounts.length > 0 && (
         <div className="creator-generate-result">
-          <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 4 }}>
+          <div className="preview-count-label" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Generated {state.amounts.length} tiles
           </div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)' }}>
+          <div className="preview-total" style={{ fontSize: 24 }}>
             {fmt(state.amounts.reduce((s, v) => s + v, 0), currency)} total
           </div>
         </div>
       )}
 
-      <div className="creator-footer" style={{ display: 'flex', gap: 8 }}>
-        <button
-          className="btn-secondary"
-          style={{ flex: 1 }}
-          onClick={handleGenerate}
-          disabled={!canGenerate}
-        >
-          {generated ? 'Regenerate' : 'Generate →'}
-        </button>
-        {canProceed && (
-          <button className="btn-primary" style={{ flex: 2 }} onClick={onNext}>
-            Preview →
+      <div className="creator-footer">
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            className={`btn-secondary${isStale ? ' pulse-button' : ''}`}
+            style={{ flex: 1, marginTop: 0 }}
+            onClick={handleGenerate}
+            disabled={!canGenerate}
+          >
+            {generated ? 'Regenerate' : 'Generate'}
           </button>
-        )}
+          {canProceed && (
+            <button className="btn-primary" style={{ flex: 1 }} onClick={onNext}>
+              Preview →
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
