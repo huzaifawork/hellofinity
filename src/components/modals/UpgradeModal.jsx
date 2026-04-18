@@ -48,12 +48,14 @@ const STRIPE_APPEARANCE = {
       marginBottom: '6px',
     },
     '.Tab': {
-      border: '1px solid rgba(34,16,12,0.15)',
-      backgroundColor: '#F5F2ED',
+      border: '1px solid var(--border)',
+      backgroundColor: 'var(--surface2)',
+      color: 'var(--text)',
     },
     '.Tab--selected': {
       border: '1.5px solid #F5C842',
-      backgroundColor: '#FFFBEC',
+      backgroundColor: 'rgba(245,200,66,0.1)',
+      color: 'var(--text)',
     },
   },
 }
@@ -263,7 +265,18 @@ export default function UpgradeModal({ onClose, onUpgraded }) {
 
             <Elements
               stripe={stripePromise}
-              options={{ clientSecret, appearance: STRIPE_APPEARANCE }}
+              options={{ 
+                clientSecret, 
+                appearance: {
+                  ...STRIPE_APPEARANCE,
+                  variables: {
+                    ...STRIPE_APPEARANCE.variables,
+                    colorBackground: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1E100C' : '#FAFAF8',
+                    colorText: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F5F0EC' : '#22100C',
+                    colorTextSecondary: document.documentElement.getAttribute('data-theme') === 'dark' ? '#9E8078' : '#8A6A60',
+                  }
+                } 
+              }}
             >
               <UpgradePaymentForm
                 email={currentUser?.email || ''}

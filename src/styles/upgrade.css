@@ -29,11 +29,11 @@
   max-width: 420px;
   max-height: 90vh;
   overflow-y: auto;
-  background: var(--card, #fff);
+  background: var(--surface, #fff);
   border-radius: 20px;
   box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(0, 0, 0, 0.05);
+    0 0 0 1px var(--border);
   animation: upgradeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 0;
 }
@@ -126,7 +126,7 @@
   margin: 20px 24px 0;
   padding: 16px 18px;
   border-radius: 14px;
-  background: var(--bg2, #FAFAF8);
+  background: var(--surface2, #FAFAF8);
   border: 1.5px solid var(--border, rgba(34, 16, 12, 0.08));
 }
 
@@ -215,7 +215,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: var(--bg2, #FAFAF8);
+  background: var(--surface3, #FAFAF8);
   flex-shrink: 0;
 }
 
@@ -426,9 +426,30 @@
 
 /* ── Dark mode overrides ─────────────────────────────────────────────────────── */
 [data-theme="dark"] .upgrade-modal {
+  background: var(--surface);
+  color: var(--text);
   box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .upgrade-price-card {
+  background: var(--surface2);
+  border-color: var(--border-md);
+}
+
+[data-theme="dark"] .upgrade-feature-icon {
+  background: var(--surface3);
+  color: #fff;
+}
+
+[data-theme="dark"] .upgrade-price-saving {
+  border-top-color: var(--border);
+}
+
+[data-theme="dark"] .upgrade-perk {
+  background: var(--surface2);
+  color: var(--text);
 }
 
 [data-theme="dark"] .upgrade-close {
