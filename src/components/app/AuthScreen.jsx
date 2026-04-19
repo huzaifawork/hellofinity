@@ -98,7 +98,7 @@ function PasswordStrength({ password }) {
 
 export default function AuthScreen() {
   const { state, dispatch } = useApp()
-  const { user } = useAuth()
+  const { user, isRecovering, setIsRecovering } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const { toggleTheme, isDark } = useTheme()
@@ -108,10 +108,10 @@ export default function AuthScreen() {
 
   // Handle password recovery redirection
   useEffect(() => {
-    if (window.__recoveryMode) {
+    if (isRecovering) {
       showPanel('panel-update-password')
     }
-  }, [location.pathname]) // re-check when we are on the login page
+  }, [isRecovering, location.pathname])
 
   // If on /app/setup, default to the right panel based on whether they have a name
   useEffect(() => {
@@ -344,7 +344,7 @@ export default function AuthScreen() {
       if (error) throw error
       
       // Clear recovery state
-      window.__recoveryMode = false
+      setIsRecovering(false)
       
       showToast('Password updated! You can now sign in.')
       setForgotMode(false)
@@ -656,7 +656,7 @@ export default function AuthScreen() {
                     </button>
                     
                     <button type="button" className="btn-secondary btn-full" style={{ marginTop: 8 }}
-                      onClick={() => { window.__recoveryMode = false; showPanel('panel-auth'); switchTab('signin') }}>
+                      onClick={() => { setIsRecovering(false); showPanel('panel-auth'); switchTab('signin') }}>
                       ← Cancel
                     </button>
                   </form>

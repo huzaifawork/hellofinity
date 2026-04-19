@@ -23,7 +23,7 @@ import MilestoneBanner from '../components/common/MilestoneBanner'
  */
 export default function AppLayout() {
   const { state, dispatch } = useApp()
-  const { user } = useAuth()
+  const { user, isRecovering } = useAuth()
   const { theme } = useTheme()
   const navigate  = useNavigate()
   const location  = useLocation()
@@ -114,7 +114,6 @@ export default function AppLayout() {
         })
 
         // 5. Redirect to dashboard if on login/root (but NOT if recovering password)
-        const isRecovering = window.__recoveryMode
         if ((location.pathname === '/app/login' || location.pathname === '/app' || location.pathname === '/app/') && !isRecovering) {
           navigate('/app/dashboard', { replace: true })
         }

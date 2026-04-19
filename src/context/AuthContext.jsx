@@ -18,6 +18,7 @@ export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null)
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isRecovering, setIsRecovering] = useState(false)
   const suppressSignOut       = useRef(false)
 
   useEffect(() => {
@@ -42,8 +43,7 @@ export function AuthProvider({ children }) {
         }
         
         if (event === 'PASSWORD_RECOVERY') {
-          // Set a temporary session flag or signal that we are in recovery mode
-          window.__recoveryMode = true
+          setIsRecovering(true)
         }
         return
       }
@@ -81,7 +81,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, setUser, setSession }}>
+    <AuthContext.Provider value={{ user, session, loading, isRecovering, setUser, setSession, setIsRecovering }}>
       {children}
     </AuthContext.Provider>
   )
