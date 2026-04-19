@@ -346,6 +346,9 @@ export default function AuthScreen() {
       // Clear recovery state
       setIsRecovering(false)
       
+      // Populate email for sign-in so browser managers can save/update
+      if (user?.email) setEmail(user.email)
+      
       showToast('Password updated! You can now sign in.')
       setForgotMode(false)
       showPanel('panel-auth')
@@ -632,6 +635,9 @@ export default function AuthScreen() {
                   <div className="auth-intro-sub">Please choose a strong new password to secure your account.</div>
 
                   <form onSubmit={handleUpdatePassword}>
+                    {/* Hidden email field for browser password managers */}
+                    <input type="email" value={user?.email || ''} readOnly style={{ display: 'none' }} autoComplete="username" />
+
                     <label className="form-label">New Password</label>
                     <div className="pw-input-wrap">
                       <input
