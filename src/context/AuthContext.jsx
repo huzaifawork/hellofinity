@@ -33,12 +33,17 @@ export function AuthProvider({ children }) {
 
     // 2. Reactive listener
     const { data: { subscription } } = sb.auth.onAuthStateChange((event, s) => {
-      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED' || event === 'PASSWORD_RECOVERY') {
         if (s?.user) {
           setUser(s.user)
           setSession(s)
           suppressSignOut.current = true
           setLoading(false)
+        }
+        
+        if (event === 'PASSWORD_RECOVERY') {
+          // Set a temporary session flag or signal that we are in recovery mode
+          window.__recoveryMode = true
         }
         return
       }

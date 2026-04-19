@@ -44,41 +44,44 @@ export default function AppLayout() {
       dispatch({ type: 'SET_USER', payload: user })
 
       try {
-        // 1. Sync profile
+        // 1. Sync profile name from metadata if null
         const profile = await dbUpsertProfile(user.id, {})
+        const m = user.user_metadata || {}
+        const metadataName = m.first_name || m.full_name || m.name
+        if (profile && !profile.name && metadataName) {
+           await dbUpsertProfile(user.id, { name: metadataName })
+           profile.name = metadataName
+        }
+
         if (cancelled) return
         dispatch({ type: 'SET_IS_PREMIUM', payload: profile?.is_pro === true })
 
-        // 2. Load active challenges
+        // 2. Redirection and basic state init
+        const hasValidName = profile?.name && !profile.name.includes('@') && !profile.name.includes('.')
         const challenges = await dbLoadActiveChallenges(user.id)
         if (cancelled) return
         dispatch({ type: 'SET_ACTIVE_CHALLENGES', payload: challenges })
 
-        // 3. No challenges yet — route accordingly
+        // If no challenges, they are a 'new' user/needs setup
         if (challenges.length === 0) {
-          if (profile === null) {
-            // Profile fetch failed — stay on current page (login will be shown by ProtectedRoute)
-            return
-          }
-          if (!profile.name) {
-            // New user — needs name setup (but only redirect if on /app/login or /app exactly)
-            if (location.pathname === '/app/login' || location.pathname === '/app' || location.pathname === '/app/') {
-              navigate('/app/setup', { replace: true })
-            }
-            return
-          }
-          // User has profile but no challenges — go to dashboard
           dispatch({ type: 'SET_CHALLENGE', payload: {
             name:     profile.name,
             currency: profile.currency || 'GBP',
           }})
           if (location.pathname === '/app/login' || location.pathname === '/app' || location.pathname === '/app/') {
-            navigate('/app/dashboard', { replace: true })
+            navigate('/app/setup', { replace: true })
           }
           return
+        } 
+        
+        if (!hasValidName) {
+           // If they have challenges but no valid name somehow, force setup
+           if (!location.pathname.includes('/app/setup')) {
+             navigate('/app/setup', { replace: true })
+           }
         }
 
-        // 4. Load most recent challenge
+        // 3. Load most recent challenge
         const ch  = challenges[challenges.length - 1]
         const cd  = Array.isArray(ch.challenge_data) ? ch.challenge_data[0] : (ch.challenge_data || {})
         const cfg = CHALLENGE_CONFIGS[ch.type] || CHALLENGE_CONFIGS.envelope_100
@@ -100,7 +103,7 @@ export default function AppLayout() {
           },
         })
 
-        // 5. Init milestones per challenge
+        // 4. Init milestones per challenge
         challenges.forEach(ach => {
           const acd  = Array.isArray(ach.challenge_data) ? ach.challenge_data[0] : (ach.challenge_data || {})
           const acfg = CHALLENGE_CONFIGS[ach.type] || CHALLENGE_CONFIGS.envelope_100
@@ -110,8 +113,9 @@ export default function AppLayout() {
           dispatch({ type: 'SET_MILESTONES',  challengeId: ach.id, payload: new Set() })
         })
 
-        // 6. Redirect to dashboard if on login/root
-        if (location.pathname === '/app/login' || location.pathname === '/app' || location.pathname === '/app/') {
+        // 5. Redirect to dashboard if on login/root (but NOT if recovering password)
+        const isRecovering = location.search.includes('recovery=true') || window.__recoveryMode
+        if ((location.pathname === '/app/login' || location.pathname === '/app' || location.pathname === '/app/') && !isRecovering) {
           navigate('/app/dashboard', { replace: true })
         }
       } catch (e) {

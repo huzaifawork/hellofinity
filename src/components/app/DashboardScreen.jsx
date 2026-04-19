@@ -70,10 +70,12 @@ export default function DashboardScreen({ visible }) {
 
   const hour = new Date().getHours()
   const timeGreet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
-  const displayName = (challenge?.name && challenge.name.trim() !== '' && challenge.name !== 'there')
+  const m = currentUser?.user_metadata || {}
+  const rawName = (challenge?.name && challenge.name.trim() !== '' && challenge.name !== 'there')
     ? challenge.name
-    : (currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'there')
-  const greeting = displayName !== 'there' ? `${timeGreet}, ${displayName} 👋` : 'Welcome back 👋'
+    : (m.first_name || m.full_name || m.name || 'there')
+  const displayName = (rawName && (rawName.includes('@') || rawName.includes('.'))) ? 'there' : rawName
+  const greeting = `${timeGreet}${displayName !== 'there' ? ', ' + displayName : ''} 👋`
 
   const totalSaved = activeChallenges.reduce((sum, ch) => {
     const cfg  = CHALLENGE_CONFIGS[ch.type] || CHALLENGE_CONFIGS.envelope_100
@@ -157,7 +159,7 @@ export default function DashboardScreen({ visible }) {
           <div style={{ position: 'relative' }}>
             <button className="header-avatar-btn" onClick={() => setMenuOpen(o => !o)} title="Account">
               <span className="header-avatar-initial">
-                {(challenge?.name && challenge.name !== 'there' ? challenge.name : currentUser?.email || '?')[0].toUpperCase()}
+                {(displayName || currentUser?.email || '?')[0].toUpperCase()}
               </span>
             </button>
             {menuOpen && (

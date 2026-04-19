@@ -106,6 +106,18 @@ export default function AuthScreen() {
   const panel = state.authPanel
   const isPremium = state.isPremium
 
+  // Handle password recovery redirection
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    if (params.get('recovery') === 'true' || window.__recoveryMode) {
+      showPanel('panel-update-password')
+      // clean up URL
+      if (params.get('recovery') === 'true') {
+        navigate(location.pathname, { replace: true })
+      }
+    }
+  }, [location.search])
+
   // If on /app/setup, default to the right panel based on whether they have a name
   useEffect(() => {
     if (location.pathname === '/app/setup' && panel === 'panel-auth') {
@@ -166,7 +178,7 @@ export default function AuthScreen() {
   // Clear errors when switching tabs
   function switchTab(tab) {
     setAuthTab(tab)
-    setEmailErr(''); setPasswordErr(''); setConfirmPwErr(''); setAuthError('')
+    setEmailErr(''); setFirstNameErr(''); setPasswordErr(''); setConfirmPwErr(''); setAuthError('')
     setForgotMode(false); setResetSent(false)
   }
 
@@ -225,8 +237,9 @@ export default function AuthScreen() {
         const challenges = await dbLoadActiveChallenges(data.user.id)
         dispatch({ type: 'SET_ACTIVE_CHALLENGES', payload: challenges })
 
+        const hasValidName = profile?.name && !profile.name.includes('@') && !profile.name.includes('.')
         if (challenges.length === 0) {
-          if (!profile?.name) {
+          if (!hasValidName) {
             navigate('/app/setup', { replace: true })
           } else {
             dispatch({ type: 'SET_CHALLENGE', payload: { name: profile.name, currency: profile.currency || 'GBP' } })
@@ -261,14 +274,16 @@ export default function AuthScreen() {
 
   async function handleSignUp(e) {
     e.preventDefault()
-    let valid = true
     const eErr = validateEmail(email)
     const pErr = validatePassword(password)
-    if (eErr) { setEmailErr(eErr); valid = false }
-    if (pErr) { setPasswordErr(pErr); valid = false }
-    if (!confirmPw) { setConfirmPwErr('Please confirm your password.'); valid = false }
-    else if (confirmPw !== password) { setConfirmPwErr('Passwords do not match.'); valid = false }
-    if (!valid) return
+    
+    if (eErr || pErr) {
+      if (eErr) setEmailErr(eErr)
+      if (pErr) setPasswordErr(pErr)
+      return
+    }
+    if (!confirmPw) { setConfirmPwErr('Please confirm your password.'); return }
+    if (confirmPw !== password) { setConfirmPwErr('Passwords do not match.'); return }
 
     setAuthError(''); setSubmitting(true)
     try {
@@ -282,14 +297,12 @@ export default function AuthScreen() {
 
       if (error) { setAuthError(friendlyError(error.message)); return }
 
-      // If session exists → email confirmation is OFF → user is immediately signed in
       if (data?.session) {
         dispatch({ type: 'SET_USER', payload: data.user })
         navigate('/app/setup', { replace: true })
         return
       }
 
-      // Email confirmation is ON → show notice
       setConfirmEmail(email.trim().toLowerCase())
       showPanel('panel-confirm')
     } catch (err) {
@@ -301,44 +314,51 @@ export default function AuthScreen() {
 
   // ── Forgot password ───────────────────────────────────────────────────────
   
-  const [resetNewPw,    setResetNewPw]    = useState('')
-  const [resetNewPwErr, setResetNewPwErr] = useState('')
-
-  async function handleResetPassword(e) {
+  async function handleResetRequest(e) {
     e.preventDefault()
-    let valid = true
     const emailErr = validateEmail(resetEmail)
-    if (emailErr) { setResetEmailErr(emailErr); valid = false }
+    if (emailErr) { setResetEmailErr(emailErr); return }
     
-    const pwErr = validatePassword(resetNewPw)
-    if (pwErr) { setResetNewPwErr(pwErr); valid = false }
-
-    if (!valid) return
-
     setResetEmailErr('')
-    setResetNewPwErr('')
     setResetSending(true)
     try {
-      const res = await fetch('/api/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: resetEmail.trim().toLowerCase(),
-          newPassword: resetNewPw
-        })
+      const { error } = await sb.auth.resetPasswordForEmail(resetEmail.trim().toLowerCase(), {
+        redirectTo: `${window.location.origin}/app/login?recovery=true`,
       })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to reset password')
-      }
-      
+      if (error) throw error
       setResetSent(true)
     } catch (err) {
       setResetEmailErr(friendlyError(err.message))
     } finally {
       setResetSending(false)
+    }
+  }
+
+  const [newPassword,    setNewPassword]    = useState('')
+  const [newPasswordErr, setNewPasswordErr] = useState('')
+
+  async function handleUpdatePassword(e) {
+    e.preventDefault()
+    const pwErr = validatePassword(newPassword)
+    if (pwErr) { setNewPasswordErr(pwErr); return }
+
+    setNewPasswordErr('')
+    setSubmitting(true)
+    try {
+      const { error } = await sb.auth.updateUser({ password: newPassword })
+      if (error) throw error
+      
+      // Clear recovery state
+      window.__recoveryMode = false
+      
+      showToast('Password updated! You can now sign in.')
+      setForgotMode(false)
+      showPanel('panel-auth')
+      setAuthTab('signin')
+    } catch (err) {
+      setNewPasswordErr(friendlyError(err.message))
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -453,20 +473,20 @@ export default function AuthScreen() {
                 <div className="forgot-wrap">
                   {resetSent ? (
                     <>
-                      <div className="auth-sent-icon" style={{ fontSize: 32 }}>✅</div>
-                      <div className="auth-intro" style={{ fontSize: 15 }}>Password updated!</div>
+                      <div className="auth-sent-icon">📬</div>
+                      <div className="auth-intro" style={{ fontSize: 15 }}>Check your inbox</div>
                       <div className="auth-intro-sub">
-                        Your password has been changed successfully. You can now log in with your new password.
+                        We sent a password reset link to <strong>{resetEmail}</strong>. Please check your email and click the link to continue.
                       </div>
-                      <button className="btn-secondary btn-full" onClick={() => { setForgotMode(false); setResetSent(false); setResetEmail(''); setResetNewPw(''); }}>
+                      <button className="btn-secondary btn-full" onClick={() => { setForgotMode(false); setResetSent(false); setResetEmail(''); }}>
                         ← Back to sign in
                       </button>
                     </>
                   ) : (
-                    <form onSubmit={handleResetPassword}>
-                      <div className="auth-intro" style={{ fontSize: 15, marginBottom: 4 }}>Reset your password</div>
+                    <form onSubmit={handleResetRequest}>
+                      <div className="auth-intro" style={{ fontSize: 15, marginBottom: 4 }}>Forgotten your password?</div>
                       <div className="auth-intro-sub">
-                        Enter your email and a new password to reset it instantly.
+                        Enter your email address and we'll send you a secure link to reset your password.
                       </div>
                       
                       <label className="form-label">Email address</label>
@@ -479,29 +499,11 @@ export default function AuthScreen() {
                       />
                       <FieldError msg={resetEmailErr} />
 
-                      <label className="form-label" style={{ marginTop: '0.75rem' }}>New Password</label>
-                      <div className="pw-input-wrap">
-                        <input
-                          className={`form-input${resetNewPwErr ? ' input-error' : ''}`}
-                          type={showPw ? 'text' : 'password'}
-                          placeholder="Create a new password"
-                          autoComplete="new-password"
-                          value={resetNewPw}
-                          onChange={e => { setResetNewPw(e.target.value); setResetNewPwErr('') }}
-                        />
-                        <button type="button" className="pw-toggle" onClick={() => setShowPw(v => !v)}
-                          tabIndex={-1} title={showPw ? 'Hide' : 'Show'}>
-                          {showPw ? '🙈' : '👁️'}
-                        </button>
-                      </div>
-                      <PasswordStrength password={resetNewPw} />
-                      <FieldError msg={resetNewPwErr} />
-
-                      <button type="submit" className="btn-primary btn-full" style={{ marginTop: '1rem' }} disabled={resetSending}>
-                        {resetSending ? 'Resetting…' : 'Reset password →'}
+                      <button type="submit" className="btn-primary btn-full" style={{ marginTop: '1.5rem' }} disabled={resetSending}>
+                        {resetSending ? 'Sending link…' : 'Send reset link →'}
                       </button>
                       <button type="button" className="btn-secondary btn-full" style={{ marginTop: 8 }}
-                        onClick={() => { setForgotMode(false); setResetEmail(''); setResetEmailErr(''); setResetNewPw(''); setResetNewPwErr('') }}>
+                        onClick={() => { setForgotMode(false); setResetEmail(''); setResetEmailErr(''); }}>
                         ← Back to sign in
                       </button>
                     </form>
@@ -615,6 +617,46 @@ export default function AuthScreen() {
                 </>
               )}
 
+            </div>
+          </div>
+        )}
+
+        {/* ── Panel: Update Password ─────────────────────────────────────── */}
+        {panel === 'panel-update-password' && (
+          <div className="auth-panel active">
+            <div className="auth-card">
+              <div className="auth-intro">Securely update password</div>
+              <div className="auth-intro-sub">Please choose a strong new password to secure your account.</div>
+
+              <form onSubmit={handleUpdatePassword}>
+                <label className="form-label">New Password</label>
+                <div className="pw-input-wrap">
+                  <input
+                    className={`form-input${newPasswordErr ? ' input-error' : ''}`}
+                    type={showPw ? 'text' : 'password'}
+                    placeholder="Enter new password"
+                    autoComplete="new-password"
+                    autoFocus
+                    value={newPassword}
+                    onChange={e => { setNewPassword(e.target.value); setNewPasswordErr('') }}
+                  />
+                  <button type="button" className="pw-toggle" onClick={() => setShowPw(v => !v)}
+                    tabIndex={-1} title={showPw ? 'Hide' : 'Show'}>
+                    {showPw ? '🙈' : '👁️'}
+                  </button>
+                </div>
+                <PasswordStrength password={newPassword} />
+                <FieldError msg={newPasswordErr} />
+
+                <button type="submit" className="btn-primary btn-full" style={{ marginTop: '1.5rem' }} disabled={submitting}>
+                  {submitting ? 'Updating…' : 'Update password →'}
+                </button>
+                
+                <button type="button" className="btn-secondary btn-full" style={{ marginTop: 8 }}
+                  onClick={() => { showPanel('panel-auth'); switchTab('signin') }}>
+                  ← Cancel
+                </button>
+              </form>
             </div>
           </div>
         )}

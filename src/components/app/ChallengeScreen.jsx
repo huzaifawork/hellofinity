@@ -177,7 +177,16 @@ export default function ChallengeScreen({ visible }) {
           <div className="header-name">Hello<span>Finity</span></div>
         </div>
         <div className="header-goal">
-          {challenge.goal ? `Saving for: ${challenge.goal}` : `Hi, ${(challenge?.name && challenge.name.trim() !== '' && challenge.name !== 'there') ? challenge.name : (currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'there')}.`}
+          {(() => {
+            const m = currentUser?.user_metadata || {}
+            const rawNm = (challenge?.name && challenge.name.trim() !== '' && challenge.name !== 'there') 
+              ? challenge.name 
+              : (m.first_name || m.full_name || m.name || 'there')
+            const nm = (rawNm && (rawNm.includes('@') || rawNm.includes('.'))) ? 'there' : rawNm
+            const hour = new Date().getHours()
+            const timeGreet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
+            return challenge.goal ? `Saving for: ${challenge.goal}` : `${timeGreet}${nm !== 'there' ? ', ' + nm : ''} 👋`
+          })()}
         </div>
         <div className="header-right">
           <span className={`saving-indicator${savingState !== 'idle' ? ' visible' : ''}${savingState === 'saved' ? ' saved' : ''}`}>
@@ -192,7 +201,14 @@ export default function ChallengeScreen({ visible }) {
           <div style={{ position: 'relative' }}>
             <button className="header-avatar-btn" onClick={() => setAccountMenuOpen(o => !o)} title="Account">
             <span className="header-avatar-initial">
-              {(challenge?.name && challenge.name !== 'there' ? challenge.name : currentUser?.email || '?')[0].toUpperCase()}
+              {(() => {
+                const met = currentUser?.user_metadata || {}
+                const rawN = (challenge?.name && challenge.name.trim() !== '' && challenge.name !== 'there') 
+                  ? challenge.name 
+                  : (met.first_name || met.full_name || met.name || 'there')
+                const n = (rawN && (rawN.includes('@') || rawN.includes('.'))) ? 'there' : rawN
+                return (n || currentUser?.email || '?')[0].toUpperCase()
+              })()}
             </span>
           </button>
             {accountMenuOpen && (
