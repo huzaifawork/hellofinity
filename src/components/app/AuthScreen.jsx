@@ -108,15 +108,10 @@ export default function AuthScreen() {
 
   // Handle password recovery redirection
   useEffect(() => {
-    const params = new URLSearchParams(location.search)
-    if (params.get('recovery') === 'true' || window.__recoveryMode) {
+    if (window.__recoveryMode) {
       showPanel('panel-update-password')
-      // clean up URL
-      if (params.get('recovery') === 'true') {
-        navigate(location.pathname, { replace: true })
-      }
     }
-  }, [location.search])
+  }, [location.pathname]) // re-check when we are on the login page
 
   // If on /app/setup, default to the right panel based on whether they have a name
   useEffect(() => {
@@ -323,7 +318,7 @@ export default function AuthScreen() {
     setResetSending(true)
     try {
       const { error } = await sb.auth.resetPasswordForEmail(resetEmail.trim().toLowerCase(), {
-        redirectTo: `${window.location.origin}/app/login?recovery=true`,
+        redirectTo: `${window.location.origin}/app/login`,
       })
       if (error) throw error
       setResetSent(true)
@@ -625,38 +620,48 @@ export default function AuthScreen() {
         {panel === 'panel-update-password' && (
           <div className="auth-panel active">
             <div className="auth-card">
-              <div className="auth-intro">Securely update password</div>
-              <div className="auth-intro-sub">Please choose a strong new password to secure your account.</div>
+              {!user ? (
+                <>
+                  <div className="auth-intro">Verifying security...</div>
+                  <div className="auth-intro-sub">Connecting to your account securely. Please wait.</div>
+                  <div className="auth-spinner" style={{ margin: '2rem auto' }}></div>
+                </>
+              ) : (
+                <>
+                  <div className="auth-intro">Securely update password</div>
+                  <div className="auth-intro-sub">Please choose a strong new password to secure your account.</div>
 
-              <form onSubmit={handleUpdatePassword}>
-                <label className="form-label">New Password</label>
-                <div className="pw-input-wrap">
-                  <input
-                    className={`form-input${newPasswordErr ? ' input-error' : ''}`}
-                    type={showPw ? 'text' : 'password'}
-                    placeholder="Enter new password"
-                    autoComplete="new-password"
-                    autoFocus
-                    value={newPassword}
-                    onChange={e => { setNewPassword(e.target.value); setNewPasswordErr('') }}
-                  />
-                  <button type="button" className="pw-toggle" onClick={() => setShowPw(v => !v)}
-                    tabIndex={-1} title={showPw ? 'Hide' : 'Show'}>
-                    {showPw ? '🙈' : '👁️'}
-                  </button>
-                </div>
-                <PasswordStrength password={newPassword} />
-                <FieldError msg={newPasswordErr} />
+                  <form onSubmit={handleUpdatePassword}>
+                    <label className="form-label">New Password</label>
+                    <div className="pw-input-wrap">
+                      <input
+                        className={`form-input${newPasswordErr ? ' input-error' : ''}`}
+                        type={showPw ? 'text' : 'password'}
+                        placeholder="Enter new password"
+                        autoComplete="new-password"
+                        autoFocus
+                        value={newPassword}
+                        onChange={e => { setNewPassword(e.target.value); setNewPasswordErr('') }}
+                      />
+                      <button type="button" className="pw-toggle" onClick={() => setShowPw(v => !v)}
+                        tabIndex={-1} title={showPw ? 'Hide' : 'Show'}>
+                        {showPw ? '🙈' : '👁️'}
+                      </button>
+                    </div>
+                    <PasswordStrength password={newPassword} />
+                    <FieldError msg={newPasswordErr} />
 
-                <button type="submit" className="btn-primary btn-full" style={{ marginTop: '1.5rem' }} disabled={submitting}>
-                  {submitting ? 'Updating…' : 'Update password →'}
-                </button>
-                
-                <button type="button" className="btn-secondary btn-full" style={{ marginTop: 8 }}
-                  onClick={() => { showPanel('panel-auth'); switchTab('signin') }}>
-                  ← Cancel
-                </button>
-              </form>
+                    <button type="submit" className="btn-primary btn-full" style={{ marginTop: '1.5rem' }} disabled={submitting}>
+                      {submitting ? 'Updating…' : 'Update password →'}
+                    </button>
+                    
+                    <button type="button" className="btn-secondary btn-full" style={{ marginTop: 8 }}
+                      onClick={() => { window.__recoveryMode = false; showPanel('panel-auth'); switchTab('signin') }}>
+                      ← Cancel
+                    </button>
+                  </form>
+                </>
+              )}
             </div>
           </div>
         )}
